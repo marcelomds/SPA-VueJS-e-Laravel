@@ -19,13 +19,7 @@
 
 
     </span>
-
-
-
   </login-template>
-
-
-
 </template>
 
 <script>
