@@ -2,7 +2,7 @@
   <site-template>
 
     <span slot="menuesquerdo">
-      <img src="https://www.designerd.com.br/wp-content/uploads/2013/06/criar-rede-social.png" class="responsive-img">
+      <img :src="usuario.image" class="responsive-img">
     </span>
 
     <span slot="principal">
@@ -15,7 +15,7 @@
         <div class="file-field input-field">
           <div class="btn">
             <span>Imagem</span>
-            <input type="file">
+            <input type="file" @change="salvaImagem">
           </div>
           <div class="file-path-wrapper">
             <input class="file-path validate" type="text">
@@ -42,7 +42,8 @@ export default {
         name: '',
         email: '',
         password: '',
-        password_confirmation: ''
+        password_confirmation: '',
+        image: ''
       },
       usuario: false
     }
@@ -60,19 +61,36 @@ export default {
     }
   },
   methods: {
+    salvaImagem(e) {
+      let file = e.target.files || e.dataTransfer.files;
+
+      if (!file.length) {
+        return;
+      }
+
+      let reader = new FileReader();
+      reader.onloadend = (e) => {
+        this.newUser.image = e.target.result;
+      };
+
+      reader.readAsDataURL(file[0]);
+    },
+
     perfil() {
       axios.put(`http://127.0.0.1:8000/api/perfil`, {
         name: this.newUser.name,
         email: this.newUser.email,
         password: this.newUser.password,
-        password_confirmation: this.newUser.password_confirmation
+        password_confirmation: this.newUser.password_confirmation,
+        image: this.newUser.image
       }, {
         "headers": {"authorization":"Bearer "+this.usuario.token}
       })
           .then(response => {
             if (response.data.token) {
               console.log(response.data)
-              sessionStorage.setItem('usuario', JSON.stringify(response.data));
+              this.usuario = response.data;
+              sessionStorage.setItem('usuario', JSON.stringify(this.usuario));
               alert('Informações atualizadas!');
               this.$router.push('/');
             } else {

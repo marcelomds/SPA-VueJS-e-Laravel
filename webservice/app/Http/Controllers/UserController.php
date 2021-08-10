@@ -31,6 +31,7 @@ class UserController extends Controller
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = \auth()->user();
             $user->token = $user->createToken($user->email)->accessToken;
+            $user->image = asset($user->image);
 
             return $user;
         } else {
@@ -51,15 +52,24 @@ class UserController extends Controller
             return $validate->errors();
         }
 
+        $image = "/perfils/padrao.png";
+
         $user = $this->user->create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => bcrypt($request->password)
+            'password' => bcrypt($request->password),
+            'image' => $image
         ]);
 
         $user->token = $user->createToken($user->email)->accessToken;
+        $user->image = asset($user->image);
 
         return $user;
+    }
+
+    public function user(Request $request)
+    {
+        return $request->user();
     }
 
     public function profile(Request $request)
@@ -94,8 +104,74 @@ class UserController extends Controller
 
         }
 
+        if (isset($data['image'])) {
+
+            Validator::extend('base64image', function ($attribute, $value, $parameters, $validator) {
+                $explode = explode(',', $value);
+                $allow = ['png', 'jpg', 'svg', 'jpeg'];
+                $format = str_replace(
+                    [
+                        'data:image/',
+                        ';',
+                        'base64',
+                    ],
+                    [
+                        '', '', ''
+                    ],
+                    $explode[0]
+                );
+
+                if (!in_array($format, $allow)) {
+                    return false;
+                }
+
+                if (!preg_match('%^[a-zA-Z0-9/+]*={0,2}$%', $explode[1])) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            $validate = Validator::make($data, [
+                'image' => 'base64image',
+            ], ['base64image' => 'Imagem Inválida']);
+
+            if ($validate->fails()) {
+                return $validate->errors();
+            }
+
+            $time = time();
+            $diretorioPai = 'perfils';
+            $diretorioImagem = $diretorioPai . DIRECTORY_SEPARATOR . 'perfil_id' . $user->id;
+            $ext = substr($data['image'], 11, strpos($data['image'], ';') - 11);
+
+            $urlImagem = $diretorioImagem . DIRECTORY_SEPARATOR . $time . '.' . $ext;
+
+            $file = str_replace('data:image/' . $ext . ';base64,', '', $data['image']);
+            $file = base64_decode($file);
+
+            if (!file_exists($diretorioPai)) {
+                mkdir($diretorioPai, 0700);
+            }
+
+            if ($user->image) {
+                if (file_exists($user->image)) {
+                    unlink($user->image);
+                }
+            }
+
+            if (!file_exists($diretorioImagem)) {
+                mkdir($diretorioImagem, 0700);
+            }
+
+            file_put_contents($urlImagem, $file);
+
+            $user->image = $urlImagem;
+        }
+
         $user->save();
 
+        $user->image = asset($user->image);
         $user->token = $user->createToken($user->email)->accessToken;
 
         return $user;

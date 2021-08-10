@@ -17,17 +17,15 @@
               <slot name="menuesquerdo" />
             </card-menu-vue>
             <card-menu-vue>
-              <h3>Teste</h3>
+              <h4>Amigos</h4>
+              <li>Maurílio</li>
+              <li>Jhuly</li>
             </card-menu-vue>
           </grid-vue>
           <grid-vue tamanho="8">
             <slot name="principal" />
           </grid-vue>
-
         </div>
-
-
-
       </div>
     </main>
 
