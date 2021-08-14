@@ -17,6 +17,11 @@ class UserController extends Controller
         $this->user = $user;
     }
 
+    /**
+     * Login de Usuário
+     * @param Request $request
+     * @return array|false[]
+     */
     public function login(Request $request)
     {
         $validate = Validator::make($request->all(), [
@@ -25,7 +30,11 @@ class UserController extends Controller
         ]);
 
         if ($validate->fails()) {
-            return $validate->errors();
+            return [
+                'status' => false,
+                'validation' => true,
+                'errors' => $validate->errors()
+            ];
         }
 
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
@@ -33,13 +42,24 @@ class UserController extends Controller
             $user->token = $user->createToken($user->email)->accessToken;
             $user->image = asset($user->image);
 
-            return $user;
+            return [
+                'status' => true,
+                'user' => $user
+            ];
         } else {
-            return ['status' => false];
+            return [
+                'status' => false
+            ];
         }
 
     }
 
+
+    /**
+     * Registrar Novo Usuário
+     * @param Request $request
+     * @return array
+     */
     public function register(Request $request)
     {
         $validate = Validator::make($request->all(), [
@@ -49,7 +69,11 @@ class UserController extends Controller
         ]);
 
         if ($validate->fails()) {
-            return $validate->errors();
+            return [
+                'status' => false,
+                'validation' => true,
+                'errors' => $validate->errors()
+            ];
         }
 
         $image = "/perfils/padrao.png";
@@ -64,14 +88,18 @@ class UserController extends Controller
         $user->token = $user->createToken($user->email)->accessToken;
         $user->image = asset($user->image);
 
-        return $user;
+        return [
+            'status' => true,
+            'user' => $user
+        ];
     }
 
-    public function user(Request $request)
-    {
-        return $request->user();
-    }
 
+    /**
+     * Perfil do Usuário
+     * @param Request $request
+     * @return \Illuminate\Support\MessageBag|mixed
+     */
     public function profile(Request $request)
     {
         $user = $request->user();
@@ -85,7 +113,11 @@ class UserController extends Controller
             ]);
 
             if ($validate->fails()) {
-                return $validate->errors();
+                return [
+                    'status' => false,
+                    'validation' => true,
+                    'errors' => $validate->errors()
+                ];
             }
 
             $user->password = bcrypt($data['password']);
@@ -96,7 +128,11 @@ class UserController extends Controller
             ]);
 
             if ($validate->fails()) {
-                return $validate->errors();
+                return [
+                    'status' => false,
+                    'validation' => true,
+                    'errors' => $validate->errors()
+                ];
             }
 
             $user->name = $data['name'];
@@ -137,7 +173,11 @@ class UserController extends Controller
             ], ['base64image' => 'Imagem Inválida']);
 
             if ($validate->fails()) {
-                return $validate->errors();
+                return [
+                    'status' => false,
+                    'validation' => true,
+                    'errors' => $validate->errors()
+                ];
             }
 
             $time = time();
@@ -165,7 +205,6 @@ class UserController extends Controller
             }
 
             file_put_contents($urlImagem, $file);
-
             $user->image = $urlImagem;
         }
 
@@ -174,6 +213,9 @@ class UserController extends Controller
         $user->image = asset($user->image);
         $user->token = $user->createToken($user->email)->accessToken;
 
-        return $user;
+        return [
+            'status' => true,
+            'user' => $user
+        ];
     }
 }

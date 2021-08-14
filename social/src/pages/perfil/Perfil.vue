@@ -1,6 +1,5 @@
 <template>
   <site-template>
-
     <span slot="menuesquerdo">
       <img :src="usuario.image" class="responsive-img">
     </span>
@@ -86,17 +85,17 @@ export default {
         "headers": {"authorization":"Bearer "+this.usuario.token}
       })
           .then(response => {
-            if (response.data.token) {
+            if (response.data.status) {
               console.log(response.data)
-              this.usuario = response.data;
+              this.usuario = response.data.user;
               sessionStorage.setItem('usuario', JSON.stringify(this.usuario));
               alert('Informações atualizadas!');
               this.$router.push('/');
-            } else {
+            } else if(response.data.status == false && response.data.validation) {
               // erros de validação
               console.log('erros de validação')
               let erros = '';
-              for (let erro of Object.values(response.data)) {
+              for (let erro of Object.values(response.data.errors)) {
                 erros += erro + " ";
               }
               alert(erros);

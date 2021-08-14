@@ -1,7 +1,5 @@
 <template>
-
   <login-template>
-
     <span slot="menuesquerdo">
       <img src="https://www.designerd.com.br/wp-content/uploads/2013/06/criar-rede-social.png" class="responsive-img">
     </span>
@@ -16,13 +14,7 @@
       <router-link class="btn orange" to="/cadastro">Cadastre-se</router-link>
 
     </span>
-
-
-
   </login-template>
-
-
-
 </template>
 
 <script>
@@ -50,23 +42,22 @@ export default {
       })
       .then(response => {
         //console.log(response)
-        if(response.data.token){
+        if(response.data.status){
           // login com sucesso
           console.log('login com sucesso')
-          sessionStorage.setItem('usuario',JSON.stringify(response.data));
+          sessionStorage.setItem('usuario',JSON.stringify(response.data.user));
           this.$router.push('/');
-        }else if(response.data.status == false){
-          //login não existe
-          console.log('login não existe')
-          alert('Login inválido!');
-        }else{
-          // erros de validação
+        }else if(response.data.status == false && response.data.validation){
           console.log('erros de validação')
           let erros = '';
-          for(let erro of Object.values(response.data)){
+          for(let erro of Object.values(response.data.errors)){
             erros += erro +" ";
           }
           alert(erros);
+        }else{
+          //login não existe
+          console.log('login não existe')
+          alert('Login inválido!');
         }
       })
       .catch(e => {

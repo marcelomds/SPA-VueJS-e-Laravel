@@ -50,20 +50,20 @@ export default {
         password_confirmation: this.newUser.password_confirmation
       })
       .then(response => {
-        if (response.data.token) {
+        if (response.data.status) {
           alert('Cadastro realizado com sucesso');
-          sessionStorage.setItem('usuario', JSON.stringify(response.data));
+          sessionStorage.setItem('usuario', JSON.stringify(response.data.user));
           this.$router.push('/');
-        } else if (response.data.status === false) {
-          alert('Erro ao cadastrar!');
-        } else {
+        } else if (response.data.status == false && response.data.validation) {
           // erros de validação
           console.log('erros de validação')
           let erros = '';
-          for(let erro of Object.values(response.data)){
+          for(let erro of Object.values(response.data.errors)){
             erros += erro +" ";
           }
           alert(erros);
+        } else {
+          alert('Erro ao cadastrar!');
         }
       })
       .catch(error => console.log(error))
