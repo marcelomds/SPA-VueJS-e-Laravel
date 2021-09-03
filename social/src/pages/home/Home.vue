@@ -15,7 +15,7 @@
     </span>
 
     <span slot="principal">
-      <publicar-conteudo-vue />
+      <publicar-conteudo-vue :usuario="usuario" />
 
 
       <card-conteudo-vue

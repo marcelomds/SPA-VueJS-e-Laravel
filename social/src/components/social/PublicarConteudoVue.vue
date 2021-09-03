@@ -1,11 +1,20 @@
 <template>
   <div class="row">
     <grid-vue class="input-field" tamanho="12">
-      <textarea v-model="conteudo" class="materialize-textarea"></textarea>
+      <input type="text" v-model="conteudo.titulo">
+      <textarea v-if="conteudo.titulo.length > 3" placeholder="Conteúdo" v-model="conteudo.texto"
+                class="materialize-textarea"></textarea>
+      <input v-if="conteudo.titulo && conteudo.texto.length > 2" type="text" placeholder="Link" v-model="conteudo.link">
+      <input v-if="conteudo.titulo && conteudo.texto.length > 2" type="text" placeholder="URL da Imagem"
+             v-model="conteudo.imagem">
       <label>O que está acontecendo?</label>
     </grid-vue>
-    <p>
-      <grid-vue v-if="conteudo" class="btn waves-effect waves-light" tamanho="2 offset-s10">Publicar</grid-vue>
+    <p class="right-align">
+      <button v-if="conteudo.titulo && conteudo.texto"
+              @click="addConteudo"
+              class="btn waves-effect waves-light"
+      >Publicar
+      </button>
     </p>
   </div>
 </template>
@@ -15,14 +24,38 @@ import GridVue from '@/components/layouts/GridVue'
 
 export default {
   name: 'PublicarConteudoVue',
-  props:[],
-  data () {
+  props: ['usuario'],
+  data() {
     return {
-      conteudo:''
+      conteudo: {
+        titulo: '',
+        texto: '',
+        link: '',
+        imagem: ''
+      }
     }
   },
-  components:{
+  components: {
     GridVue
+  },
+  methods: {
+    addConteudo() {
+      this.$http.post(this.$urlAPI + 'conteudo/adicionar', {
+        titulo: this.conteudo.titulo,
+        texto: this.conteudo.texto,
+        link: this.conteudo.link,
+        imagem: this.conteudo.imagem,
+      }, {
+        "headers": {"authorization": "Bearer " + this.usuario.token}
+      }).then(response => {
+        if (response.data.status) {
+
+        }
+      }).catch(error => {
+        console.log(error);
+        alert('Erro! Tente mais tarde');
+      })
+    }
   }
 }
 </script>
